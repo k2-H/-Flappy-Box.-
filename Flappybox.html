@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Flappy Bird – Full Screen</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#70c5ce}
+canvas{display:block;width:100%;height:100%;background:#70c5ce;-webkit-tap-highlight-color:transparent}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const cfg={g:0.6,jump:-9,pipeV:5,gap:180,pipeW:80};
+let W,H,ctx,bird,pipes,score,state,groundY;
+const ST={START:0,PLAY:1,OVER:2};
+
+function reset(){
+  W=window.innerWidth;H=window.innerHeight;groundY=H; // no ground strip
+  bird={x:W*0.25,y:H*0.5,w:35,h:35,v:0,r:0};
+  pipes=[];score=0;state=ST.START;
+}
+
+function addPipe(){
+  const min=H*0.15,max=H*0.65;
+  pipes.push({x:W,top:Math.random()*(max-min)+min,pass:false});
+}
+
+function hit(p){
+  const bx=bird.x,bw=bird.w,by=bird.y,bh=bird.h,px=p.x,pw=cfg.pipeW,
+        top=p.top,gapY=top+cfg.gap;
+  return bx<bw+px&&bx+bw>px&&(by<top||by+bh>gapY);
+}
+
+function update(){
+  if(state!==ST.PLAY)return;
+  bird.v+=cfg.g;bird.y+=bird.v;bird.r=Math.min(bird.v*4,45);
+  if(++frame%70===0)addPipe();
+  pipes.forEach(p=>p.x-=cfg.pipeV);
+  pipes=pipes.filter(p=>p.x+cfg.pipeW>0);
+  for(const p of pipes){
+    if(!p.pass&&p.x+cfg.pipeW<bird.x){p.pass=true;++score;}
+    if(hit(p))state=ST.OVER;
+  }
+  if(bird.y<0||bird.y+bird.h>H)state=ST.OVER;
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#228b22';
+  pipes.forEach(p=>{
+    ctx.fillRect(p.x,0,cfg.pipeW,p.top);
+    ctx.fillRect(p.x,p.top+cfg.gap,cfg.pipeW,H-p.top-cfg.gap);
+  });
+  ctx.save();
+  ctx.translate(bird.x+bird.w/2,bird.y+bird.h/2);
+  ctx.rotate(bird.r*Math.PI/180);
+  ctx.fillStyle='#ffd700';
+  ctx.fillRect(-bird.w/2,-bird.h/2,bird.w,bird.h);
+  ctx.restore();
+
+  // score
+  ctx.fillStyle='#fff';
+  ctx.font='bold 48px sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText(score, W/2, 60);
+
+  // overlays
+  if(state===ST.START){
+    ctx.font='bold 32px sans-serif';
+    ctx.fillText('Click / SPACE to start',W/2,H*0.5);
+  }
+  if(state===ST.OVER){
+    ctx.font='bold 40px sans-serif';
+    ctx.fillText('Game Over',W/2,H*0.45);
+    ctx.font='bold 28px sans-serif';
+    ctx.fillText('Score: '+score, W/2, H*0.55);
+    ctx.fillText('Press R to restart', W/2, H*0.65);
+  }
+}
+
+function loop(){
+  update();draw();requestAnimationFrame(loop);
+}
+
+function input(){
+  if(state===ST.START)state=ST.PLAY;
+  else if(state===ST.PLAY)bird.v=cfg.jump;
+}
+
+function resize(){
+  c.width=W=window.innerWidth;
+  c.height=H=window.innerHeight;
+}
+
+const c=document.getElementById('c');ctx=c.getContext('2d');
+let frame=0;reset();resize();loop();
+window.addEventListener('resize',resize);
+window.addEventListener('keydown',e=>{
+  if(e.code==='Space'){e.preventDefault();input();}
+  if(e.code==='KeyR'&&state===ST.OVER)reset();
+});
+['mousedown','touchstart'].forEach(ev=>c.addEventListener(ev,e=>{
+  e.preventDefault();input();
+},{passive:false}));
+</script>
+</body>
+</html>
