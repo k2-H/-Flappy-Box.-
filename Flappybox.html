@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Flappy Bird – Full Screen</title>
+<title>Flappy Box – Full Screen</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#70c5ce}
@@ -13,12 +13,12 @@ canvas{display:block;width:100%;height:100%;background:#70c5ce;-webkit-tap-highl
 <canvas id="c"></canvas>
 <script>
 const cfg={g:0.6,jump:-9,pipeV:5,gap:180,pipeW:80};
-let W,H,ctx,bird,pipes,score,state,groundY;
+let W,H,ctx,box,pipes,score,state,groundY;
 const ST={START:0,PLAY:1,OVER:2};
 
 function reset(){
-  W=window.innerWidth;H=window.innerHeight;groundY=H; // no ground strip
-  bird={x:W*0.25,y:H*0.5,w:35,h:35,v:0,r:0};
+  W=window.innerWidth;H=window.innerHeight;groundY=H;
+  box={x:W*0.25,y:H*0.5,w:35,h:35,v:0,r:0};
   pipes=[];score=0;state=ST.START;
 }
 
@@ -28,22 +28,22 @@ function addPipe(){
 }
 
 function hit(p){
-  const bx=bird.x,bw=bird.w,by=bird.y,bh=bird.h,px=p.x,pw=cfg.pipeW,
+  const bx=box.x,bw=box.w,by=box.y,bh=box.h,px=p.x,pw=cfg.pipeW,
         top=p.top,gapY=top+cfg.gap;
   return bx<bw+px&&bx+bw>px&&(by<top||by+bh>gapY);
 }
 
 function update(){
   if(state!==ST.PLAY)return;
-  bird.v+=cfg.g;bird.y+=bird.v;bird.r=Math.min(bird.v*4,45);
+  box.v+=cfg.g;box.y+=box.v;box.r=Math.min(box.v*4,45);
   if(++frame%70===0)addPipe();
   pipes.forEach(p=>p.x-=cfg.pipeV);
   pipes=pipes.filter(p=>p.x+cfg.pipeW>0);
   for(const p of pipes){
-    if(!p.pass&&p.x+cfg.pipeW<bird.x){p.pass=true;++score;}
+    if(!p.pass&&p.x+cfg.pipeW<box.x){p.pass=true;++score;}
     if(hit(p))state=ST.OVER;
   }
-  if(bird.y<0||bird.y+bird.h>H)state=ST.OVER;
+  if(box.y<0||box.y+box.h>H)state=ST.OVER;
 }
 
 function draw(){
@@ -54,10 +54,10 @@ function draw(){
     ctx.fillRect(p.x,p.top+cfg.gap,cfg.pipeW,H-p.top-cfg.gap);
   });
   ctx.save();
-  ctx.translate(bird.x+bird.w/2,bird.y+bird.h/2);
-  ctx.rotate(bird.r*Math.PI/180);
+  ctx.translate(box.x+box.w/2,box.y+box.h/2);
+  ctx.rotate(box.r*Math.PI/180);
   ctx.fillStyle='#ffd700';
-  ctx.fillRect(-bird.w/2,-bird.h/2,bird.w,bird.h);
+  ctx.fillRect(-box.w/2,-box.h/2,box.w,box.h);
   ctx.restore();
 
   // score
@@ -86,7 +86,7 @@ function loop(){
 
 function input(){
   if(state===ST.START)state=ST.PLAY;
-  else if(state===ST.PLAY)bird.v=cfg.jump;
+  else if(state===ST.PLAY)box.v=cfg.jump;
 }
 
 function resize(){
