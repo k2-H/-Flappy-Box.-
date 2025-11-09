@@ -8,7 +8,7 @@ No bird. No sprites. Just a box, some pipes, and your reflexes.
 
 Built in one file. No excuses. 
 
-Note : Built from scratch in **vanilla HTML5 Canvas**.  
+Made in **vanilla HTML5 Canvas**.  
 No libraries. No assets. Just pure JavaScript, physics, and focus.
 
 ## 🎮 How to Play
